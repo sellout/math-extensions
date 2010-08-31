@@ -1,0 +1,68 @@
+(in-package #:math-extensions)
+
+(defclass numeric-set ()
+  ())
+
+(defclass enumerated-set (numeric-set)
+  ((values :initform ())))
+
+(defgeneric add-value (value set)
+  (:method (value (set enumerated-set))
+    (when (not (find value (slot-value set 'values)))
+      (push value (slot-value set 'values))))
+  (:method ((value enumerated-set) (set enumerated-set))
+    (mapcar (lambda (v) (add-value v set))
+            (slot-value value 'values))))
+
+(defmethod initialize-instance :after ((object enumerated-set)
+                                       &key initial-contents &allow-other-keys)
+  (mapc (lambda (value)
+          (add-value value object))
+        (remove-duplicates initial-contents :test #'=)))
+
+(set-dispatch-macro-character
+ #\# #\{
+ (lambda (stream subchar arg)
+   (declare (ignore subchar arg))
+   (let* ((min (read stream nil nil t))
+          (char (read-char stream nil nil t))
+          (str (make-string-output-stream)))
+     (make-instance 'enumerated-set
+                    :initial-contents
+                    (list min (read-from-string
+                               (loop while (not (eql char #\}))
+                                  do (write-char char str)
+                                  (setf char (read-char stream nil nil t))
+                                  finally (return (get-output-stream-string
+                                                   str)))))))))
+
+(defmethod +- ((value enumerated-set))
+  (make-instance 'enumerated-set :initial-contents (mapcar #'+- value)))
+
+(defmethod abs ((value enumerated-set))
+  (make-instance 'numeric-set
+                 :initial-contents (mapcar #'abs value)))
+
+(defmethod sqrt ((value enumerated-set))
+  (reduce #'merge (mapcar #'sqrt value)))
+
+(defmethod unary-- ((value enumerated-set))
+  (make-instance 'numeric-set :initial-contents (mapcar #'- value)))
+
+;;; ADDITION
+
+(define-commutative-method binary-+ ((augend enumerated-set) addend)
+  (make-instance 'enumerated-set
+                 :initial-contents (mapcar (lambda (number) (+ number addend))
+                                           augend)))
+
+(defmethod binary-+ ((augend enumerated-set) (addend enumerated-set))
+  (reduce #'merge (mapcar (lambda (number) (+ addend number)) augend)))
+
+;;; EQUALITY
+
+(define-commutative-method binary-= ((left enumerated-set) (right number))
+  nil)
+
+(defmethod binary-= ((left enumerated-set) (right enumerated-set))
+  (= (length left) (length right) (length (intersection left right))))
