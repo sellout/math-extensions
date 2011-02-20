@@ -50,7 +50,6 @@
       ((< minimum 0) (make-instance 'interval
                                     :minimum 0
                                     :maximum (max maximum (abs minimum))))
-      ((= (abs minimum) (abs maximum)) (abs minimum))
       (t value))))
 
 (defmethod binary-+ ((augend interval) (addend interval))
