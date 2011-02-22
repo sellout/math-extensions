@@ -8,6 +8,7 @@
   integration of additional number systems (E.G., quaternion and
   surreal numbers) with the existing system."
   :depends-on (loom)
+  :pathname "src/"
   :components ((:file "package")
                (:file "utilities" :depends-on ("package"))
                (:file "numeric-sets" :depends-on ("utilities"))
