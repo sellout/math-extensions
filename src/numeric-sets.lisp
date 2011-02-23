@@ -41,7 +41,8 @@
 
 (defmethod abs ((value enumerated-set))
   (make-instance 'numeric-set
-                 :initial-contents (mapcar #'abs value)))
+                 :initial-contents (remove-duplicates (mapcar #'abs value)
+                                                      :test #'=)))
 
 (defmethod sqrt ((value enumerated-set))
   (reduce #'merge (mapcar #'sqrt value)))
@@ -65,4 +66,15 @@
   nil)
 
 (defmethod binary-= ((left enumerated-set) (right enumerated-set))
-  (= (length left) (length right) (length (intersection left right))))
+  (= (size left) (size right) (size (intersection left right))))
+
+;;; SET OPERATIONS
+
+(defmethod size ((set enumerated-set))
+  (length (slot-value set 'values)))
+
+(defmethod intersection
+    ((list-1 enumerated-set) (list-2 enumerated-set) &key &allow-other-keys)
+  (make-instance 'enumerated-set
+                 :initial-contents (intersection (slot-value list-1 'values)
+                                                 (slot-value list-2 'values))))
