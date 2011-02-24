@@ -4,7 +4,7 @@
   #.(loom.utilities:use-with-cl :numbers :conses :sequences)
   (:export #:define-commutative-method
            #:numeric-set
-           #:enumerated-set #:+-
+           #:enumerated-set #:make-set #:+-
            #:interval #:minimum #:maximum #:difference
            #:quaternion #:scalar #:i #:j #:k
            #:octonion #:l #:il #:jl #:kl))

@@ -27,38 +27,49 @@
    (let* ((min (read stream nil nil t))
           (char (read-char stream nil nil t))
           (str (make-string-output-stream)))
-     (make-instance 'enumerated-set
-                    :initial-contents
-                    (list min (read-from-string
-                               (loop while (not (eql char #\}))
-                                  do (write-char char str)
-                                  (setf char (read-char stream nil nil t))
-                                  finally (return (get-output-stream-string
-                                                   str)))))))))
+     (apply #'make-set
+            min
+            (list (read-from-string
+                   (loop while (not (eql char #\}))
+                      do (write-char char str)
+                      (setf char (read-char stream nil nil t))
+                      finally (return (get-output-stream-string
+                                       str)))))))))
+
+(defmethod print-object ((object enumerated-set) stream)
+  (format stream "#{~{~a~^ ~}}" (slot-value object 'values)))
+
+(defun make-set (&rest values)
+  (let ((unique-values (remove-duplicates values :test #'=)))
+    (if (= 1 (length unique-values))
+        (car unique-values)
+        (make-instance 'enumerated-set :initial-contents unique-values))))
+
+(defmethod map ((result-type (eql 'enumerated-set)) function &rest sequences)
+  (apply #'make-set (apply #'map 'list function sequences)))
 
 (defmethod +- ((value enumerated-set))
-  (make-instance 'enumerated-set :initial-contents (mapcar #'+- value)))
+  (map 'enumerated-set #'+- (slot-value value 'values)))
 
 (defmethod abs ((value enumerated-set))
-  (make-instance 'numeric-set
-                 :initial-contents (remove-duplicates (mapcar #'abs value)
-                                                      :test #'=)))
+  (map 'enumerated-set #'abs (slot-value value 'values)))
 
 (defmethod sqrt ((value enumerated-set))
-  (reduce #'merge (mapcar #'sqrt value)))
+  (map 'enumerated-set #'sqrt (slot-value value 'values)))
 
 (defmethod unary-- ((value enumerated-set))
-  (make-instance 'numeric-set :initial-contents (mapcar #'- value)))
+  (map 'enumerated-set #'- (slot-value value 'values)))
 
 ;;; ADDITION
 
 (define-commutative-method binary-+ ((augend enumerated-set) addend)
-  (make-instance 'enumerated-set
-                 :initial-contents (mapcar (lambda (number) (+ number addend))
-                                           augend)))
+  (map 'enumerated-set (lambda (number) (binary-+ number addend))
+       (slot-value augend 'values)))
 
 (defmethod binary-+ ((augend enumerated-set) (addend enumerated-set))
-  (reduce #'merge (mapcar (lambda (number) (+ addend number)) augend)))
+  (make-set (reduce #'merge
+                    (mapcar (lambda (number) (binary-+ addend number))
+                            (slot-value augend 'values)))))
 
 ;;; EQUALITY
 
@@ -66,7 +77,7 @@
   nil)
 
 (defmethod binary-= ((left enumerated-set) (right enumerated-set))
-  (= (size left) (size right) (size (intersection left right))))
+  (not (set-exclusive-or left right :test #'=)))
 
 ;;; SET OPERATIONS
 
@@ -75,31 +86,27 @@
 
 (defmethod intersection
     ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
-  (make-instance 'enumerated-set
-                 :initial-contents (apply #'intersection
-                                          (slot-value list-1 'values)
-                                          (slot-value list-2 'values)
-                                          args)))
+  (make-set (apply #'intersection
+                   (slot-value list-1 'values)
+                   (slot-value list-2 'values)
+                   args)))
 
 (defmethod set-difference
     ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
-  (make-instance 'enumerated-set
-                 :initial-contents (apply #'set-difference
-                                          (slot-value list-1 'values)
-                                          (slot-value list-2 'values)
-                                          args)))
+  (make-set (apply #'set-difference
+                   (slot-value list-1 'values)
+                   (slot-value list-2 'values)
+                   args)))
 
 (defmethod set-exclusive-or
     ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
-  (make-instance 'enumerated-set
-                 :initial-contents (apply #'set-exclusive-or
-                                          (slot-value list-1 'values)
-                                          (slot-value list-2 'values)
-                                          args)))
+  (make-set (apply #'set-exclusive-or
+                   (slot-value list-1 'values)
+                   (slot-value list-2 'values)
+                   args)))
 
 (defmethod union ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
-  (make-instance 'enumerated-set
-                 :initial-contents (apply #'union
-                                          (slot-value list-1 'values)
-                                          (slot-value list-2 'values)
-                                          args)))
+  (make-set (apply #'union
+                   (slot-value list-1 'values)
+                   (slot-value list-2 'values)
+                   args)))
