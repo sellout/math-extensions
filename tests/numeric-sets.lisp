@@ -16,3 +16,13 @@
 
 (test should-add-sets
   (is (= (make-set -7 -3 3 7) (+ (+- 2) (+- 5)))))
+
+(test should-work-for-quadratic-formula
+  (labels ((quad (a b c)
+             (/ (+ (- b) (sqrt (- (expt b 2) (* 4 a c)))) (* 2 a)))
+           (compare (a b c)
+             (let ((set (quad a b c)))
+               (round (map 'enumerated-set
+                           (lambda (x) (+ (* a (expt x 2)) (* b x) c))
+                           (slot-value set 'values))))))
+    (is (= 0 (compare 2 35 4)))))
