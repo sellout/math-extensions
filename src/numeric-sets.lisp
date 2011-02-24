@@ -59,6 +59,40 @@
 (defmethod binary-= ((left enumerated-set) (right enumerated-set))
   (not (slot-value (set-exclusive-or left right :test #'=) 'values)))
 
+;;; Rounding
+
+(defmethod floor ((number enumerated-set) &optional (divisor 1))
+  (map 'enumerated-set (lambda (num) (floor num divisor))
+       (slot-value number 'values)))
+
+(defmethod ffloor ((number enumerated-set) &optional (divisor 1))
+  (map 'enumerated-set (lambda (num) (ffloor num divisor))
+       (slot-value number 'values)))
+
+(defmethod ceiling ((number enumerated-set) &optional (divisor 1))
+  (map 'enumerated-set (lambda (num) (ceiling num divisor))
+       (slot-value number 'values)))
+
+(defmethod fceiling ((number enumerated-set) &optional (divisor 1))
+  (map 'enumerated-set (lambda (num) (fceiling num divisor))
+       (slot-value number 'values)))
+
+(defmethod truncate ((number enumerated-set) &optional (divisor 1))
+  (map 'enumerated-set (lambda (num) (truncate num divisor))
+       (slot-value number 'values)))
+
+(defmethod ftruncate ((number enumerated-set) &optional (divisor 1))
+  (map 'enumerated-set (lambda (num) (ftruncate num divisor))
+       (slot-value number 'values)))
+
+(defmethod round ((number enumerated-set) &optional (divisor 1))
+  (map 'enumerated-set (lambda (num) (round num divisor))
+       (slot-value number 'values)))
+
+(defmethod fround ((number enumerated-set) &optional (divisor 1))
+  (map 'enumerated-set (lambda (num) (fround num divisor))
+       (slot-value number 'values)))
+
 ;;; Arithmetic
 
 (define-commutative-method binary-* ((multiplicand enumerated-set) multiplier)
