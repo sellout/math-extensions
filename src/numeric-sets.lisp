@@ -63,13 +63,14 @@
 ;;; ADDITION
 
 (define-commutative-method binary-+ ((augend enumerated-set) addend)
-  (map 'enumerated-set (lambda (number) (binary-+ number addend))
+  (map 'enumerated-set
+       (lambda (number) (binary-+ number addend))
        (slot-value augend 'values)))
 
 (defmethod binary-+ ((augend enumerated-set) (addend enumerated-set))
-  (make-set (reduce #'merge
-                    (mapcar (lambda (number) (binary-+ addend number))
-                            (slot-value augend 'values)))))
+  (reduce (lambda (first second) (union first second :test #'=))
+          (mapcar (lambda (number) (binary-+ augend number))
+                  (slot-value addend 'values))))
 
 ;;; EQUALITY
 
@@ -77,7 +78,7 @@
   nil)
 
 (defmethod binary-= ((left enumerated-set) (right enumerated-set))
-  (not (set-exclusive-or left right :test #'=)))
+  (not (slot-value (set-exclusive-or left right :test #'=) 'values)))
 
 ;;; SET OPERATIONS
 
@@ -86,27 +87,27 @@
 
 (defmethod intersection
     ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
-  (make-set (apply #'intersection
-                   (slot-value list-1 'values)
-                   (slot-value list-2 'values)
-                   args)))
+  (apply #'make-set (apply #'intersection
+                           (slot-value list-1 'values)
+                           (slot-value list-2 'values)
+                           args)))
 
 (defmethod set-difference
     ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
-  (make-set (apply #'set-difference
-                   (slot-value list-1 'values)
-                   (slot-value list-2 'values)
-                   args)))
+  (apply #'make-set (apply #'set-difference
+                           (slot-value list-1 'values)
+                           (slot-value list-2 'values)
+                           args)))
 
 (defmethod set-exclusive-or
     ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
-  (make-set (apply #'set-exclusive-or
-                   (slot-value list-1 'values)
-                   (slot-value list-2 'values)
-                   args)))
+  (apply #'make-set (apply #'set-exclusive-or
+                           (slot-value list-1 'values)
+                           (slot-value list-2 'values)
+                           args)))
 
 (defmethod union ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
-  (make-set (apply #'union
-                   (slot-value list-1 'values)
-                   (slot-value list-2 'values)
-                   args)))
+  (apply #'make-set (apply #'union
+                           (slot-value list-1 'values)
+                           (slot-value list-2 'values)
+                           args)))

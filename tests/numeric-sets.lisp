@@ -13,3 +13,6 @@
 
 (test should-add-mixed-values
   (is (= (make-set 4 6) (+ 3 (make-set 1 3)))))
+
+(test should-add-sets
+  (is (= (make-set -7 -3 3 7) (+ (+- 2) (+- 5)))))
