@@ -74,7 +74,32 @@
   (length (slot-value set 'values)))
 
 (defmethod intersection
-    ((list-1 enumerated-set) (list-2 enumerated-set) &key &allow-other-keys)
+    ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
   (make-instance 'enumerated-set
-                 :initial-contents (intersection (slot-value list-1 'values)
-                                                 (slot-value list-2 'values))))
+                 :initial-contents (apply #'intersection
+                                          (slot-value list-1 'values)
+                                          (slot-value list-2 'values)
+                                          args)))
+
+(defmethod set-difference
+    ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
+  (make-instance 'enumerated-set
+                 :initial-contents (apply #'set-difference
+                                          (slot-value list-1 'values)
+                                          (slot-value list-2 'values)
+                                          args)))
+
+(defmethod set-exclusive-or
+    ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
+  (make-instance 'enumerated-set
+                 :initial-contents (apply #'set-exclusive-or
+                                          (slot-value list-1 'values)
+                                          (slot-value list-2 'values)
+                                          args)))
+
+(defmethod union ((list-1 enumerated-set) (list-2 enumerated-set) &rest args)
+  (make-instance 'enumerated-set
+                 :initial-contents (apply #'union
+                                          (slot-value list-1 'values)
+                                          (slot-value list-2 'values)
+                                          args)))
