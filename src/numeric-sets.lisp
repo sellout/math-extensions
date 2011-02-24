@@ -51,16 +51,25 @@
 (defmethod +- ((value enumerated-set))
   (map 'enumerated-set #'+- (slot-value value 'values)))
 
-(defmethod abs ((value enumerated-set))
-  (map 'enumerated-set #'abs (slot-value value 'values)))
+;;; Comparison
 
-(defmethod sqrt ((value enumerated-set))
-  (map 'enumerated-set #'sqrt (slot-value value 'values)))
+(define-commutative-method binary-= ((left enumerated-set) (right number))
+  nil)
 
-(defmethod unary-- ((value enumerated-set))
-  (map 'enumerated-set #'- (slot-value value 'values)))
+(defmethod binary-= ((left enumerated-set) (right enumerated-set))
+  (not (slot-value (set-exclusive-or left right :test #'=) 'values)))
 
-;;; ADDITION
+;;; Arithmetic
+
+(define-commutative-method binary-* ((multiplicand enumerated-set) multiplier)
+  (map 'enumerated-set
+       (lambda (number) (binary-* number multiplier))
+       (slot-value multiplicand 'values)))
+
+(defmethod binary-* ((multiplicand enumerated-set) (multiplier enumerated-set))
+  (reduce (lambda (first second) (union first second :test #'=))
+          (mapcar (lambda (number) (binary-* multiplicand number))
+                  (slot-value multiplier 'values))))
 
 (define-commutative-method binary-+ ((augend enumerated-set) addend)
   (map 'enumerated-set
@@ -72,13 +81,78 @@
           (mapcar (lambda (number) (binary-+ augend number))
                   (slot-value addend 'values))))
 
-;;; EQUALITY
+(defmethod unary-- ((number enumerated-set))
+  (map 'enumerated-set #'unary-- (slot-value number 'values)))
 
-(define-commutative-method binary-= ((left enumerated-set) (right number))
-  nil)
+(defmethod binary-- ((minuend enumerated-set) subtrahend)
+  (map 'enumerated-set
+       (lambda (number) (binary-- number subtrahend))
+       (slot-value minuend 'values)))
 
-(defmethod binary-= ((left enumerated-set) (right enumerated-set))
-  (not (slot-value (set-exclusive-or left right :test #'=) 'values)))
+(defmethod binary-- (minuend (subtrahend enumerated-set))
+  (map 'enumerated-set
+       (lambda (number) (binary-- minuend number))
+       (slot-value subtrahend 'values)))
+
+(defmethod binary-- ((minuend enumerated-set) (subtrahend enumerated-set))
+  (reduce (lambda (first second) (union first second :test #'=))
+          (mapcar (lambda (number) (binary-- minuend number))
+                  (slot-value subtrahend 'values))))
+
+(defmethod unary-/ ((number enumerated-set))
+  (map 'enumerated-set #'unary-/ (slot-value number 'values)))
+
+(defmethod binary-/ ((dividend enumerated-set) divisor)
+  (map 'enumerated-set
+       (lambda (number) (binary-/ number divisor))
+       (slot-value dividend 'values)))
+
+(defmethod binary-/ (dividend (divisor enumerated-set))
+  (map 'enumerated-set
+       (lambda (number) (binary-/ dividend number))
+       (slot-value divisor 'values)))
+
+(defmethod binary-/ ((dividend enumerated-set) (divisor enumerated-set))
+  (reduce (lambda (first second) (union first second :test #'=))
+          (mapcar (lambda (number) (binary-/ dividend number))
+                  (slot-value divisor 'values))))
+
+(defmethod 1+ ((number enumerated-set))
+  (map 'enumerated-set #'1+ (slot-value number 'values)))
+
+(defmethod 1- ((number enumerated-set))
+  (map 'enumerated-set #'1+ (slot-value number 'values)))
+
+(defmethod abs ((value enumerated-set))
+  (map 'enumerated-set #'abs (slot-value value 'values)))
+
+(defmethod exp ((power enumerated-set))
+  (map 'enumerated-set #'exp (slot-value power 'values)))
+
+(defmethod expt ((base enumerated-set) power)
+  (map 'enumerated-set
+       (lambda (number) (expt number power))
+       (slot-value base 'values)))
+
+(defmethod expt (base (power enumerated-set))
+  (map 'enumerated-set
+       (lambda (number) (expt base number))
+       (slot-value power 'values)))
+
+(defmethod expt ((base enumerated-set) (power enumerated-set))
+  (reduce (lambda (first second) (union first second :test #'=))
+          (mapcar (lambda (number) (expt base number))
+                  (slot-value power 'values))))
+
+(defmethod log ((number enumerated-set) &optional base)
+  (if base
+      (map 'enumerated-set
+           (lambda (num) (log num base))
+           (slot-value number 'values))
+      (map 'enumerated-set #'log (slot-value number 'values))))
+
+(defmethod sqrt ((number enumerated-set))
+  (map 'enumerated-set #'sqrt (slot-value number 'values)))
 
 ;;; SET OPERATIONS
 
