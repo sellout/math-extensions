@@ -1,7 +1,7 @@
 (defpackage math-extensions
   (:documentation "An expansion of the usual math functionality
   that's a part of Common Lisp.")
-  #.(loom.utilities:use-with-cl :numbers :conses)
+  #.(loom.utilities:use-with-cl :numbers :conses :sequences)
   (:export #:define-commutative-method
            #:numeric-set
            #:enumerated-set #:+-
