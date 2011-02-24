@@ -16,7 +16,10 @@
 ;;; numeric-set functions
 
 (defmethod +- ((value real))
-  (make-instance 'enumerated-set :initial-contents (list (- value) value)))
+  (make-set (- value) value))
+
+(defmethod sqrt ((number real))
+  (+- (call-next-method)))
 
 ;;; quaternion and octonion functions
 (defmethod scalar ((number real))
