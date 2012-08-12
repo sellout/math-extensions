@@ -7,7 +7,9 @@
            #:enumerated-set #:make-set #:+-
            #:interval #:minimum #:maximum #:difference
            #:quaternion #:scalar #:i #:j #:k
-           #:octonion #:l #:il #:jl #:kl))
+           #:octonion #:l #:il #:jl #:kl)
+  (:shadowing-import-from #:cl #:bit)
+  (:shadowing-import-from #:loom #:- #:+ #:* #:/))
 
 (in-package #:math-extensions)
 
