@@ -61,37 +61,21 @@
 
 ;;; Rounding
 
-(defmethod floor ((number enumerated-set) &optional (divisor 1))
-  (map 'enumerated-set (lambda (num) (floor num divisor))
-       (slot-value number 'values)))
+(defmacro make-set-rounding-function (name)
+  `(defmethod ,name ((number enumerated-set) &optional (divisor 1))
+     (let ((results (mapcar (lambda (num) (multiple-value-list (,name num divisor)))
+                            (slot-value number 'values))))
+       (values (map 'enumerated-set #'first results)
+               (map 'enumerated-set #'second results)))))
 
-(defmethod ffloor ((number enumerated-set) &optional (divisor 1))
-  (map 'enumerated-set (lambda (num) (ffloor num divisor))
-       (slot-value number 'values)))
-
-(defmethod ceiling ((number enumerated-set) &optional (divisor 1))
-  (map 'enumerated-set (lambda (num) (ceiling num divisor))
-       (slot-value number 'values)))
-
-(defmethod fceiling ((number enumerated-set) &optional (divisor 1))
-  (map 'enumerated-set (lambda (num) (fceiling num divisor))
-       (slot-value number 'values)))
-
-(defmethod truncate ((number enumerated-set) &optional (divisor 1))
-  (map 'enumerated-set (lambda (num) (truncate num divisor))
-       (slot-value number 'values)))
-
-(defmethod ftruncate ((number enumerated-set) &optional (divisor 1))
-  (map 'enumerated-set (lambda (num) (ftruncate num divisor))
-       (slot-value number 'values)))
-
-(defmethod round ((number enumerated-set) &optional (divisor 1))
-  (map 'enumerated-set (lambda (num) (round num divisor))
-       (slot-value number 'values)))
-
-(defmethod fround ((number enumerated-set) &optional (divisor 1))
-  (map 'enumerated-set (lambda (num) (fround num divisor))
-       (slot-value number 'values)))
+(make-set-rounding-function floor)
+(make-set-rounding-function ffloor)
+(make-set-rounding-function ceiling)
+(make-set-rounding-function fceiling)
+(make-set-rounding-function truncate)
+(make-set-rounding-function ftruncate)
+(make-set-rounding-function round)
+(make-set-rounding-function fround)
 
 ;;; Arithmetic
 
