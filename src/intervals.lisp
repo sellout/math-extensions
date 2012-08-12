@@ -163,3 +163,30 @@
         (t (list left right))))
 (defmethod nunion ((left interval) (right interval) &key &allow-other-keys)
   (union left right))
+
+;;; Rounding
+
+(defmacro make-interval-rounding-function (name)
+  `(defmethod ,name ((number interval) &optional (divisor 1))
+     (multiple-value-bind (minquo minrem) (,name (minimum number) divisor)
+       (multiple-value-bind (maxquo maxrem) (,name (maximum number) divisor)
+         (values (if (= minquo maxquo)
+                     minquo
+                     (apply #'make-set
+                            (loop for i from minquo to maxquo collecting i)))
+                 (if (< maxrem minrem) ; FIXME: not good enough
+                     (make-set (make-instance 'interval
+                                              :minimum 0 :maximum maxrem)
+                               (make-instance 'interval
+                                              :minimum minrem :maximum divisor))
+                     (make-instance 'interval
+                                    :minimum minrem :maximum maxrem)))))))
+
+(make-interval-rounding-function floor)
+(make-interval-rounding-function ffloor)
+(make-interval-rounding-function ceiling)
+(make-interval-rounding-function fceiling)
+(make-interval-rounding-function truncate)
+(make-interval-rounding-function ftruncate)
+(make-interval-rounding-function round)
+(make-interval-rounding-function fround)
