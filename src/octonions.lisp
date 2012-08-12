@@ -85,7 +85,7 @@
      (* (i left) (imagpart right))))
 
 (defmethod abs ((number octonion))
-  (with-slots (scalar i j k j l il jl kl) number
+  (with-slots (scalar i j k l il jl kl) number
     (sqrt (+ (expt scalar 2) (expt i 2) (expt j 2) (expt k 2)
              (expt l 2) (expt il 2) (expt jl 2) (expt kl 2)))))
 
